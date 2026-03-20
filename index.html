@@ -270,6 +270,15 @@
     <button class="player-btn back-btn" id="backToMainBtn">Back</button>
   </div>
 
+  <div id="confirmVoterModal" class="modal">
+    <div class="modal-content">
+      <h3>Confirm Voter</h3>
+      <p id="confirmVoterText"></p>
+      <button class="confirm-btn" id="confirmVoterBtn">Confirm</button>
+      <button class="cancel-btn" id="cancelVoterBtn">Cancel</button>
+    </div>
+  </div>
+
   <div id="confirmModal" class="modal">
     <div class="modal-content">
       <h3>Confirm Vote</h3>
@@ -400,6 +409,11 @@
     const coachStatusText = document.getElementById("coachStatusText");
     const statusMessage = document.getElementById("statusMessage");
 
+    const confirmVoterModal = document.getElementById("confirmVoterModal");
+    const confirmVoterText = document.getElementById("confirmVoterText");
+    const confirmVoterBtn = document.getElementById("confirmVoterBtn");
+    const cancelVoterBtn = document.getElementById("cancelVoterBtn");
+
     const confirmModal = document.getElementById("confirmModal");
     const confirmText = document.getElementById("confirmText");
 
@@ -513,26 +527,9 @@
         return;
       }
 
-      const confirmVoter = confirm(`Do you want to vote as ${voter}?`);
-      if (!confirmVoter) {
-        return;
-      }
-
-      try {
-        const voteAuditRef = doc(db, "roundAudit", getRoundAuditDocId(currentRound));
-        const voteAuditSnap = await getDoc(voteAuditRef);
-        const votedBy = voteAuditSnap.exists() ? voteAuditSnap.data().votedBy || {} : {};
-
-        if (votedBy[voter]) {
-          alert(`${voter} has already voted in Round ${currentRound}.`);
-          return;
-        }
-
-        openVoting(voter);
-      } catch (error) {
-        console.error("Error checking voter status:", error);
-        alert("Could not check voting status. Please try again.");
-      }
+      selectedVoter = voter;
+      confirmVoterText.textContent = `Do you want to vote as ${voter}?`;
+      confirmVoterModal.style.display = "block";
     }
 
     function openVoting(voter) {
@@ -681,6 +678,33 @@
       await loadTally(currentTallyType);
       await loadVoterStatus();
     }
+
+    cancelVoterBtn.onclick = () => {
+      confirmVoterModal.style.display = "none";
+      selectedVoter = "";
+    };
+
+    confirmVoterBtn.onclick = async () => {
+      confirmVoterModal.style.display = "none";
+
+      try {
+        const voteAuditRef = doc(db, "roundAudit", getRoundAuditDocId(currentRound));
+        const voteAuditSnap = await getDoc(voteAuditRef);
+        const votedBy = voteAuditSnap.exists() ? voteAuditSnap.data().votedBy || {} : {};
+
+        if (votedBy[selectedVoter]) {
+          alert(`${selectedVoter} has already voted in Round ${currentRound}.`);
+          selectedVoter = "";
+          return;
+        }
+
+        openVoting(selectedVoter);
+      } catch (error) {
+        console.error("Error checking voter status:", error);
+        alert("Could not check voting status.");
+        selectedVoter = "";
+      }
+    };
 
     cancelVoteBtn.onclick = closeConfirmModal;
 
@@ -837,6 +861,10 @@
     window.onclick = (event) => {
       if (event.target === confirmModal) {
         closeConfirmModal();
+      }
+      if (event.target === confirmVoterModal) {
+        confirmVoterModal.style.display = "none";
+        selectedVoter = "";
       }
     };
 

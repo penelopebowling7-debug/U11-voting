@@ -8,51 +8,81 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #000;
+            color: #fff;
             margin: 0;
             padding: 0;
             text-align: center;
         }
 
         header {
-            background-color: #FF8C00;
-            color: white;
-            padding: 20px;
+            background: #000;
+            border-bottom: 4px solid #ff8c00;
+            padding: 15px 10px 20px;
         }
 
         header img {
-            height: 80px;
+            height: 70px;
         }
 
         h1 {
-            margin: 10px 0 0 0;
+            margin: 8px 0 0 0;
+            font-size: 24px;
+            color: #ff8c00;
         }
 
         h2 {
-            margin: 5px 0 0 0;
+            margin: 4px 0 0 0;
             font-weight: normal;
-            font-size: 18px;
+            font-size: 16px;
+            color: #fff;
         }
 
         .container {
-            padding: 20px;
+            padding: 20px 10px 40px;
         }
 
-        .player-btn {
+        .section-title {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #ff8c00;
+        }
+
+        .player-btn,
+        .coach-btn {
             display: block;
             width: 90%;
-            margin: 10px auto;
-            padding: 15px;
-            background-color: #FFA500;
-            color: white;
-            border: none;
+            max-width: 400px;
+            margin: 8px auto;
+            padding: 14px;
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #ff8c00;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
         }
 
-        .player-btn:hover {
-            background-color: #FF7A00;
+        .player-btn:hover,
+        .coach-btn:hover {
+            background-color: #ff8c00;
+            color: #000;
+        }
+
+        .coach-btn {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            background-color: #333;
+            border-color: #666;
+        }
+
+        .back-btn:hover {
+            background-color: #666;
+            color: #000;
         }
 
         /* Modal */
@@ -64,36 +94,108 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.7);
         }
 
         .modal-content {
-            background: white;
-            margin: 20% auto;
+            background: #111;
+            margin: 25% auto;
             padding: 20px;
-            width: 80%;
-            max-width: 350px;
+            width: 85%;
+            max-width: 360px;
             border-radius: 10px;
+            border: 2px solid #ff8c00;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            color: #ff8c00;
+        }
+
+        .modal p {
+            margin: 10px 0 20px;
         }
 
         .modal button {
             width: 45%;
-            padding: 12px;
-            margin: 10px;
-            border: none;
+            padding: 10px;
+            margin: 5px;
+            border: 2px solid #ff8c00;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
         }
 
         .confirm-btn {
-            background-color: #28a745;
-            color: white;
+            background-color: #ff8c00;
+            color: #000;
         }
 
         .cancel-btn {
-            background-color: #dc3545;
-            color: white;
+            background-color: #000;
+            color: #fff;
+        }
+
+        .confirm-btn:hover {
+            background-color: #ffa733;
+        }
+
+        .cancel-btn:hover {
+            background-color: #333;
+        }
+
+        /* Coach panel */
+        #coachPanel {
+            display: none;
+            padding: 10px 10px 40px;
+            border-top: 2px solid #ff8c00;
+        }
+
+        .coach-controls {
+            margin-bottom: 15px;
+        }
+
+        .coach-controls button {
+            display: inline-block;
+            width: 45%;
+            max-width: 200px;
+        }
+
+        table {
+            width: 100%;
+            max-width: 500px;
+            margin: 10px auto 0;
+            border-collapse: collapse;
+            color: #fff;
+        }
+
+        th, td {
+            border: 1px solid #444;
+            padding: 6px;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #111;
+            color: #ff8c00;
+        }
+
+        .reset-btn {
+            margin-top: 15px;
+            background-color: #000;
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+
+        .reset-btn:hover {
+            background-color: #ff0000;
+            color: #000;
+        }
+
+        .small-note {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 6px;
         }
     </style>
 </head>
@@ -106,116 +208,35 @@
     <h2>U11's Players' Player Voting</h2>
 </header>
 
-<div class="container">
-    <h3>Select Your Name</h3>
+<!-- MAIN SCREEN: SELECT VOTER -->
+<div class="container" id="mainScreen">
+    <div class="section-title">Select Your Name</div>
     <div id="voterList"></div>
+
+    <button class="coach-btn" id="coachLoginBtn">Coach Access</button>
+    <p class="small-note">Coach access is PIN protected.</p>
 </div>
 
-<!-- Voting Screen -->
+<!-- VOTING SCREEN -->
 <div class="container" id="voteScreen" style="display:none;">
-    <h3 id="voterTitle"></h3>
+    <div class="section-title" id="voterTitle"></div>
     <p>Select the player you want to vote for:</p>
     <div id="playerList"></div>
+
+    <button class="player-btn back-btn" id="backToMainBtn">Back</button>
 </div>
 
-<!-- Confirmation Modal -->
+<!-- CONFIRMATION MODAL -->
 <div id="confirmModal" class="modal">
     <div class="modal-content">
         <h3>Confirm Vote</h3>
         <p id="confirmText"></p>
         <button class="confirm-btn" id="confirmVoteBtn">Confirm</button>
-        <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+        <button class="cancel-btn" id="cancelVoteBtn">Cancel</button>
     </div>
 </div>
 
-<script type="module">
-    // Firebase imports
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // Firebase config
-    const firebaseConfig = {
-        apiKey: "AIzaSyDq-EXAMPLE",
-        authDomain: "wmjrlfc-voting.firebaseapp.com",
-        projectId: "wmjrlfc-voting",
-        storageBucket: "wmjrlfc-voting.appspot.com",
-        messagingSenderId: "123456789",
-        appId: "1:123456789:web:abc123"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Players
-    const players = [
-        "Ax", "Player 2", "Player 3", "Player 4",
-        "Player 5", "Player 6", "Player 7", "Player 8",
-        "Player 9", "Player 10", "Player 11", "Player 12"
-    ];
-
-    let selectedVoter = "";
-    let selectedVote = "";
-
-    // Load voter list
-    const voterListDiv = document.getElementById("voterList");
-    players.forEach(name => {
-        const btn = document.createElement("button");
-        btn.className = "player-btn";
-        btn.textContent = name;
-        btn.onclick = () => openVoting(name);
-        voterListDiv.appendChild(btn);
-    });
-
-    // Open voting screen
-    function openVoting(voter) {
-        selectedVoter = voter;
-        document.getElementById("voterTitle").textContent = `Voting as: ${voter}`;
-        document.getElementById("voteScreen").style.display = "block";
-
-        const playerListDiv = document.getElementById("playerList");
-        playerListDiv.innerHTML = "";
-
-        players.forEach(player => {
-            if (player !== voter) {
-                const btn = document.createElement("button");
-                btn.className = "player-btn";
-                btn.textContent = player;
-                btn.onclick = () => openConfirm(player);
-                playerListDiv.appendChild(btn);
-            }
-        });
-    }
-
-    // Open confirmation modal
-    function openConfirm(player) {
-        selectedVote = player;
-        document.getElementById("confirmText").textContent =
-            `Are you sure you want to vote for ${player}?`;
-        document.getElementById("confirmModal").style.display = "block";
-    }
-
-    // Close modal
-    function closeModal() {
-        document.getElementById("confirmModal").style.display = "none";
-    }
-
-    // Confirm vote
-    document.getElementById("confirmVoteBtn").onclick = async () => {
-        const playerRef = doc(db, "votes", selectedVote);
-
-        await updateDoc(playerRef, {
-            count: increment(1)
-        });
-
-        closeModal();
-        alert("Vote submitted successfully!");
-
-        // Reset UI
-        document.getElementById("voteScreen").style.display = "none";
-        selectedVoter = "";
-        selectedVote = "";
-    };
-</script>
-
-</body>
-</html>
+<!-- COACH PANEL -->
+<div id="coachPanel">
+    <div class="section-title">Coach Controls</div>
+    <div class="coach-controls">

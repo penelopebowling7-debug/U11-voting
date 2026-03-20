@@ -513,6 +513,11 @@
         return;
       }
 
+      const confirmVoter = confirm(`Do you want to vote as ${voter}?`);
+      if (!confirmVoter) {
+        return;
+      }
+
       try {
         const voteAuditRef = doc(db, "roundAudit", getRoundAuditDocId(currentRound));
         const voteAuditSnap = await getDoc(voteAuditRef);

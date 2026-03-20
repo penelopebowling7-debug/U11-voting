@@ -1,311 +1,311 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WMJRLFC U11 Voting</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WMJRLFC U11 Voting</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #000;
-            color: #fff;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
+    header {
+      background: #000;
+      border-bottom: 4px solid #ff8c00;
+      padding: 15px 10px 20px;
+    }
 
-        header {
-            background: #000;
-            border-bottom: 4px solid #ff8c00;
-            padding: 15px 10px 20px;
-        }
+    header img {
+      height: 70px;
+      max-width: 90%;
+      object-fit: contain;
+    }
 
-        header img {
-            height: 70px;
-        }
+    h1 {
+      margin: 8px 0 0 0;
+      font-size: 24px;
+      color: #ff8c00;
+    }
 
-        h1 {
-            margin: 8px 0 0 0;
-            font-size: 24px;
-            color: #ff8c00;
-        }
+    h2 {
+      margin: 4px 0 0 0;
+      font-weight: normal;
+      font-size: 16px;
+      color: #fff;
+    }
 
-        h2 {
-            margin: 4px 0 0 0;
-            font-weight: normal;
-            font-size: 16px;
-            color: #fff;
-        }
+    .container {
+      padding: 20px 10px 40px;
+    }
 
-        .container {
-            padding: 20px 10px 40px;
-        }
+    .section-title {
+      margin-bottom: 10px;
+      font-size: 18px;
+      color: #ff8c00;
+    }
 
-        .section-title {
-            margin-bottom: 10px;
-            font-size: 18px;
-            color: #ff8c00;
-        }
+    .sub-round {
+      font-size: 14px;
+      color: #ccc;
+      margin-bottom: 10px;
+    }
 
-        .sub-round {
-            font-size: 14px;
-            color: #ccc;
-            margin-bottom: 10px;
-        }
+    .player-btn,
+    .coach-btn {
+      display: block;
+      width: 90%;
+      max-width: 400px;
+      margin: 8px auto;
+      padding: 14px;
+      background-color: #000;
+      color: #fff;
+      border: 2px solid #ff8c00;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
 
-        .player-btn,
-        .coach-btn {
-            display: block;
-            width: 90%;
-            max-width: 400px;
-            margin: 8px auto;
-            padding: 14px;
-            background-color: #000;
-            color: #fff;
-            border: 2px solid #ff8c00;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+    .player-btn:hover,
+    .coach-btn:hover {
+      background-color: #ff8c00;
+      color: #000;
+    }
 
-        .player-btn:hover,
-        .coach-btn:hover {
-            background-color: #ff8c00;
-            color: #000;
-        }
+    .back-btn {
+      margin-top: 20px;
+      background-color: #333;
+      border-color: #666;
+    }
 
-        .back-btn {
-            margin-top: 20px;
-            background-color: #333;
-            border-color: #666;
-        }
+    .back-btn:hover {
+      background-color: #666;
+      color: #000;
+    }
 
-        .back-btn:hover {
-            background-color: #666;
-            color: #000;
-        }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+    }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 10;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-        }
+    .modal-content {
+      background: #111;
+      margin: 25% auto;
+      padding: 20px;
+      width: 85%;
+      max-width: 360px;
+      border-radius: 10px;
+      border: 2px solid #ff8c00;
+    }
 
-        .modal-content {
-            background: #111;
-            margin: 25% auto;
-            padding: 20px;
-            width: 85%;
-            max-width: 360px;
-            border-radius: 10px;
-            border: 2px solid #ff8c00;
-        }
+    .modal h3 {
+      margin-top: 0;
+      color: #ff8c00;
+    }
 
-        .modal h3 {
-            margin-top: 0;
-            color: #ff8c00;
-        }
+    .modal button {
+      width: 45%;
+      padding: 10px;
+      margin: 5px;
+      border: 2px solid #ff8c00;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
-        .modal button {
-            width: 45%;
-            padding: 10px;
-            margin: 5px;
-            border: 2px solid #ff8c00;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
+    .confirm-btn {
+      background-color: #ff8c00;
+      color: #000;
+    }
 
-        .confirm-btn {
-            background-color: #ff8c00;
-            color: #000;
-        }
+    .cancel-btn {
+      background-color: #000;
+      color: #fff;
+    }
 
-        .cancel-btn {
-            background-color: #000;
-            color: #fff;
-        }
+    .confirm-btn:hover {
+      background-color: #ffa733;
+    }
 
-        .confirm-btn:hover {
-            background-color: #ffa733;
-        }
+    .cancel-btn:hover {
+      background-color: #333;
+    }
 
-        .cancel-btn:hover {
-            background-color: #333;
-        }
+    #coachPanel {
+      display: none;
+      padding: 10px 10px 40px;
+      border-top: 2px solid #ff8c00;
+    }
 
-        /* Coach panel */
-        #coachPanel {
-            display: none;
-            padding: 10px 10px 40px;
-            border-top: 2px solid #ff8c00;
-        }
+    table {
+      width: 100%;
+      max-width: 500px;
+      margin: 10px auto 0;
+      border-collapse: collapse;
+      color: #fff;
+    }
 
-        table {
-            width: 100%;
-            max-width: 500px;
-            margin: 10px auto 0;
-            border-collapse: collapse;
-            color: #fff;
-        }
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+      font-size: 14px;
+    }
 
-        th, td {
-            border: 1px solid #444;
-            padding: 6px;
-            font-size: 14px;
-        }
+    th {
+      background-color: #111;
+      color: #ff8c00;
+    }
 
-        th {
-            background-color: #111;
-            color: #ff8c00;
-        }
+    .reset-btn {
+      margin-top: 15px;
+      background-color: #000;
+      border-color: #ff0000;
+      color: #ff0000;
+    }
 
-        .reset-btn {
-            margin-top: 15px;
-            background-color: #000;
-            border-color: #ff0000;
-            color: #ff0000;
-        }
+    .reset-btn:hover {
+      background-color: #ff0000;
+      color: #000;
+    }
 
-        .reset-btn:hover {
-            background-color: #ff0000;
-            color: #000;
-        }
+    .small-note {
+      font-size: 12px;
+      color: #ccc;
+      margin-top: 6px;
+    }
 
-        .small-note {
-            font-size: 12px;
-            color: #ccc;
-            margin-top: 6px;
-        }
+    .coach-status {
+      margin-top: 8px;
+      font-size: 14px;
+    }
 
-        .coach-status {
-            margin-top: 8px;
-            font-size: 14px;
-        }
+    .status-open {
+      color: #28a745;
+    }
 
-        .status-open {
-            color: #28a745;
-        }
+    .status-locked {
+      color: #ff4d4d;
+    }
 
-        .status-locked {
-            color: #ff0000;
-        }
+    .coach-controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
 
-        .coach-controls-row {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
+    .coach-controls-row button {
+      width: 45%;
+      max-width: 200px;
+    }
 
-        .coach-controls-row button {
-            width: 45%;
-            max-width: 200px;
-        }
-    </style>
+    .error-note {
+      color: #ff8080;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
-
 <body>
-
-<header>
-    <img src="WMJRLFC-logo.jpg" alt="Club Logo">
+  <header>
+    <img src="WMJRLFC-logo.jpg" alt="Club Logo" />
     <h1>WMJRLFC U11 Voting</h1>
     <h2 id="headerRoundText">Round 1 – U11's Players' Player Voting</h2>
-</header>
+  </header>
 
-<!-- MAIN SCREEN -->
-<div class="container" id="mainScreen">
+  <div class="container" id="mainScreen">
     <div class="section-title">Select Your Name</div>
     <div class="sub-round" id="mainRoundText">Current Round: 1</div>
     <div id="voterList"></div>
 
     <button class="coach-btn" id="coachLoginBtn">Coach Access</button>
     <p class="small-note">Coach access is PIN protected.</p>
-</div>
+    <p class="error-note" id="statusMessage"></p>
+  </div>
 
-<!-- VOTING SCREEN -->
-<div class="container" id="voteScreen" style="display:none;">
+  <div class="container" id="voteScreen" style="display: none;">
     <div class="section-title" id="voterTitle"></div>
     <div class="sub-round" id="voteRoundText">Round 1</div>
     <p>Select the player you want to vote for:</p>
     <div id="playerList"></div>
 
     <button class="player-btn back-btn" id="backToMainBtn">Back</button>
-</div>
+  </div>
 
-<!-- CONFIRMATION MODAL -->
-<div id="confirmModal" class="modal">
+  <div id="confirmModal" class="modal">
     <div class="modal-content">
-        <h3>Confirm Vote</h3>
-        <p id="confirmText"></p>
-        <button class="confirm-btn" id="confirmVoteBtn">Confirm</button>
-        <button class="cancel-btn" id="cancelVoteBtn">Cancel</button>
+      <h3>Confirm Vote</h3>
+      <p id="confirmText"></p>
+      <button class="confirm-btn" id="confirmVoteBtn">Confirm</button>
+      <button class="cancel-btn" id="cancelVoteBtn">Cancel</button>
     </div>
-</div>
+  </div>
 
-<!-- COACH PANEL -->
-<div id="coachPanel">
+  <div id="coachPanel">
     <div class="section-title">Coach Controls</div>
     <div class="sub-round" id="coachRoundText">Round: 1</div>
     <div class="coach-status" id="coachStatusText">
-        Status: <span class="status-locked">Locked</span>
+      Status: <span class="status-locked">Locked</span>
     </div>
 
     <div class="coach-controls-row">
-        <button class="coach-btn" id="prevRoundBtn">Previous Round</button>
-        <button class="coach-btn" id="nextRoundBtn">Next Round</button>
-        <button class="coach-btn" id="toggleLockBtn">Unlock Voting</button>
+      <button class="coach-btn" id="prevRoundBtn">Previous Round</button>
+      <button class="coach-btn" id="nextRoundBtn">Next Round</button>
+      <button class="coach-btn" id="toggleLockBtn">Unlock Voting</button>
     </div>
 
     <div class="coach-controls-row">
-        <button class="coach-btn" id="showRoundBtn">Show Round Tally</button>
-        <button class="coach-btn" id="showSeasonBtn">Show Season Tally</button>
+      <button class="coach-btn" id="showRoundBtn">Show Round Tally</button>
+      <button class="coach-btn" id="showSeasonBtn">Show Season Tally</button>
     </div>
 
     <table>
-        <thead>
-            <tr>
-                <th>Player</th>
-                <th id="tallyTypeHeader">Round Votes</th>
-            </tr>
-        </thead>
-        <tbody id="tallyBody"></tbody>
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th id="tallyTypeHeader">Round Votes</th>
+        </tr>
+      </thead>
+      <tbody id="tallyBody"></tbody>
     </table>
 
     <button class="player-btn reset-btn" id="resetRoundBtn">Reset Current Round</button>
     <p class="small-note">This only resets the current round tally.</p>
 
     <button class="player-btn back-btn" id="closeCoachPanelBtn">Close Coach Panel</button>
-</div>
+  </div>
 
-<script type="module">
-    /* ---------------- FIREBASE ---------------- */
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
-        getFirestore,
-        doc,
-        setDoc,
-        updateDoc,
-        increment,
-        getDoc,
-        getDocs,
-        collection
+      getFirestore,
+      doc,
+      setDoc,
+      updateDoc,
+      increment,
+      getDoc,
+      getDocs,
+      collection,
+      writeBatch,
+      serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    /* 🔥 YOUR REAL FIREBASE CONFIG (CORRECTED) 🔥 */
     const firebaseConfig = {
       apiKey: "AIzaSyCooiQwStOGMygIS2nn8ZzvGUlZR15E0Z4",
       authDomain: "u11-voting.firebaseapp.com",
       projectId: "u11-voting",
-      storageBucket: "u11-voting.appspot.com",
+      storageBucket: "u11-voting.firebasestorage.app",
       messagingSenderId: "512052329704",
       appId: "1:512052329704:web:123ae54d6c17fd7ed1dd5d",
       measurementId: "G-NDTRTVL9PN"
@@ -314,24 +314,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    /* ---------------- PLAYER LIST ---------------- */
     const players = [
-        "Aaleyah Thoroughgood",
-        "Archie Hickson",
-        "Archie Nean",
-        "Ari Finlay",
-        "Axton Thomas",
-        "Axel Velasquez Williamson",
-        "Boaz Bowman",
-        "Cash Walters",
-        "Chayce Cumpson",
-        "Don Moodie",
-        "Ethan Sadowski",
-        "Max Croak",
-        "Taj Lennard",
-        "Tanner Paton",
-        "William Hand",
-        "Zayden Clifford"
+      "Aaleyah Thoroughgood",
+      "Archie Hickson",
+      "Archie Nean",
+      "Ari Finlay",
+      "Axton Thomas",
+      "Axel Velasquez Williamson",
+      "Boaz Bowman",
+      "Cash Walters",
+      "Chayce Cumpson",
+      "Don Moodie",
+      "Ethan Sadowski",
+      "Max Croak",
+      "Taj Lennard",
+      "Tanner Paton",
+      "William Hand",
+      "Zayden Clifford"
     ];
 
     const COACH_PIN = "2287";
@@ -340,6 +339,7 @@
     let selectedVote = "";
     let currentRound = 1;
     let votingOpen = false;
+    let currentTallyType = "round";
 
     const mainScreen = document.getElementById("mainScreen");
     const voteScreen = document.getElementById("voteScreen");
@@ -352,6 +352,7 @@
     const voteRoundText = document.getElementById("voteRoundText");
     const coachRoundText = document.getElementById("coachRoundText");
     const coachStatusText = document.getElementById("coachStatusText");
+    const statusMessage = document.getElementById("statusMessage");
 
     const confirmModal = document.getElementById("confirmModal");
     const confirmText = document.getElementById("confirmText");
@@ -372,168 +373,321 @@
     const cancelVoteBtn = document.getElementById("cancelVoteBtn");
     const confirmVoteBtn = document.getElementById("confirmVoteBtn");
 
-    /* ---------------- ROUND STATUS (FIRESTORE) ---------------- */
+    function getRoundVotesCollectionName(round) {
+      return `roundVotes_r${round}`;
+    }
+
+    function showStatus(message, isError = false) {
+      statusMessage.textContent = message;
+      statusMessage.style.color = isError ? "#ff8080" : "#90ee90";
+    }
+
+    async function ensurePlayerDocsForRound(round) {
+      const batch = writeBatch(db);
+
+      for (const player of players) {
+        const ref = doc(db, getRoundVotesCollectionName(round), player);
+        batch.set(ref, { count: 0 }, { merge: true });
+      }
+
+      await batch.commit();
+    }
+
+    async function ensureSeasonDocs() {
+      const batch = writeBatch(db);
+
+      for (const player of players) {
+        const ref = doc(db, "seasonVotes", player);
+        batch.set(ref, { count: 0 }, { merge: true });
+      }
+
+      await batch.commit();
+    }
+
     async function loadRoundStatus() {
-        const statusRef = doc(db, "settings", "roundStatus");
-        const snap = await getDoc(statusRef);
+      const statusRef = doc(db, "settings", "roundStatus");
+      const snap = await getDoc(statusRef);
 
-        if (!snap.exists()) {
-            await setDoc(statusRef, { round: 1, open: false });
-            currentRound = 1;
-            votingOpen = false;
-        } else {
-            const data = snap.data();
-            currentRound = data.round || 1;
-            votingOpen = !!data.open;
-        }
+      if (!snap.exists()) {
+        await setDoc(statusRef, { round: 1, open: false }, { merge: true });
+        currentRound = 1;
+        votingOpen = false;
+      } else {
+        const data = snap.data();
+        currentRound = Number(data.round) || 1;
+        votingOpen = Boolean(data.open);
+      }
 
-        updateRoundUI();
+      await ensurePlayerDocsForRound(currentRound);
+      await ensureSeasonDocs();
+      updateRoundUI();
     }
 
     async function saveRoundStatus() {
-        const statusRef = doc(db, "settings", "roundStatus");
-        await setDoc(statusRef, { round: currentRound, open: votingOpen }, { merge: true });
-        updateRoundUI();
+      const statusRef = doc(db, "settings", "roundStatus");
+      await setDoc(statusRef, { round: currentRound, open: votingOpen }, { merge: true });
+      await ensurePlayerDocsForRound(currentRound);
+      updateRoundUI();
     }
 
     function updateRoundUI() {
-        headerRoundText.textContent = `Round ${currentRound} – U11's Players' Player Voting`;
-        mainRoundText.textContent = `Current Round: ${currentRound}`;
-        voteRoundText.textContent = `Round ${currentRound}`;
-        coachRoundText.textContent = `Round: ${currentRound}`;
+      headerRoundText.textContent = `Round ${currentRound} – U11's Players' Player Voting`;
+      mainRoundText.textContent = `Current Round: ${currentRound}`;
+      voteRoundText.textContent = `Round ${currentRound}`;
+      coachRoundText.textContent = `Round: ${currentRound}`;
 
-        const statusSpanClass = votingOpen ? "status-open" : "status-locked";
-        const statusText = votingOpen ? "Open" : "Locked";
-        coachStatusText.innerHTML = `Status: <span class="${statusSpanClass}">${statusText}</span>`;
+      const statusSpanClass = votingOpen ? "status-open" : "status-locked";
+      const statusText = votingOpen ? "Open" : "Locked";
+      coachStatusText.innerHTML = `Status: <span class="${statusSpanClass}">${statusText}</span>`;
 
-        toggleLockBtn.textContent = votingOpen ? "Lock Voting" : "Unlock Voting";
+      toggleLockBtn.textContent = votingOpen ? "Lock Voting" : "Unlock Voting";
     }
 
-    /* ---------------- BUILD VOTER LIST ---------------- */
     function buildVoterList() {
-        voterListDiv.innerHTML = "";
-        players.forEach(name => {
-            const btn = document.createElement("button");
-            btn.className = "player-btn";
-            btn.textContent = name;
-            btn.onclick = () => handleVoterClick(name);
-            voterListDiv.appendChild(btn);
-        });
+      voterListDiv.innerHTML = "";
+
+      players.forEach((name) => {
+        const btn = document.createElement("button");
+        btn.className = "player-btn";
+        btn.textContent = name;
+        btn.onclick = () => handleVoterClick(name);
+        voterListDiv.appendChild(btn);
+      });
     }
 
-    function handleVoterClick(voter) {
-        if (!votingOpen) {
-            alert("Voting is not yet open");
-            return;
+    async function handleVoterClick(voter) {
+      if (!votingOpen) {
+        alert("Voting is not open yet.");
+        return;
+      }
+
+      try {
+        const voteAuditRef = doc(db, "roundAudit", `round_${currentRound}`);
+        const voteAuditSnap = await getDoc(voteAuditRef);
+        const votedBy = voteAuditSnap.exists() ? voteAuditSnap.data().votedBy || {} : {};
+
+        if (votedBy[voter]) {
+          alert(`${voter} has already voted in Round ${currentRound}.`);
+          return;
         }
+
         openVoting(voter);
+      } catch (error) {
+        console.error("Error checking voter status:", error);
+        alert("Could not check voting status. Please try again.");
+      }
     }
 
-    /* ---------------- OPEN VOTING ---------------- */
     function openVoting(voter) {
-        selectedVoter = voter;
-        voterTitle.textContent = `Voting as: ${voter}`;
-        mainScreen.style.display = "none";
-        voteScreen.style.display = "block";
+      selectedVoter = voter;
+      voterTitle.textContent = `Voting as: ${voter}`;
+      mainScreen.style.display = "none";
+      voteScreen.style.display = "block";
 
-        playerListDiv.innerHTML = "";
-        players.forEach(player => {
-            if (player !== voter) {
-                const btn = document.createElement("button");
-                btn.className = "player-btn";
-                btn.textContent = player;
-                btn.onclick = () => openConfirm(player);
-                playerListDiv.appendChild(btn);
-            }
-        });
+      playerListDiv.innerHTML = "";
+
+      players.forEach((player) => {
+        if (player !== voter) {
+          const btn = document.createElement("button");
+          btn.className = "player-btn";
+          btn.textContent = player;
+          btn.onclick = () => openConfirm(player);
+          playerListDiv.appendChild(btn);
+        }
+      });
     }
 
-    /* ---------------- CONFIRM MODAL ---------------- */
     function openConfirm(player) {
-        selectedVote = player;
-        confirmText.textContent = `Are you sure you want to vote for ${player}?`;
-        confirmModal.style.display = "block";
+      selectedVote = player;
+      confirmText.textContent = `Are you sure you want to vote for ${player}?`;
+      confirmModal.style.display = "block";
     }
 
-    cancelVoteBtn.onclick = () => {
-        confirmModal.style.display = "none";
-    };
+    function closeConfirmModal() {
+      confirmModal.style.display = "none";
+      selectedVote = "";
+    }
+
+    cancelVoteBtn.onclick = closeConfirmModal;
 
     confirmVoteBtn.onclick = async () => {
-        if (!selectedVote) return;
+      if (!selectedVote || !selectedVoter) return;
 
-        const roundRef = doc(db, "roundVotes", selectedVote);
+      try {
+        const roundRef = doc(db, getRoundVotesCollectionName(currentRound), selectedVote);
         const seasonRef = doc(db, "seasonVotes", selectedVote);
+        const voteAuditRef = doc(db, "roundAudit", `round_${currentRound}`);
 
-        const roundSnap = await getDoc(roundRef);
-        if (!roundSnap.exists()) await setDoc(roundRef, { count: 0 });
+        await setDoc(roundRef, { count: 0 }, { merge: true });
+        await setDoc(seasonRef, { count: 0 }, { merge: true });
 
-        const seasonSnap = await getDoc(seasonRef);
-        if (!seasonSnap.exists()) await setDoc(seasonRef, { count: 0 });
+        await setDoc(
+          voteAuditRef,
+          {
+            votedBy: {
+              [selectedVoter]: {
+                votedFor: selectedVote,
+                votedAt: new Date().toISOString()
+              }
+            },
+            updatedAt: serverTimestamp()
+          },
+          { merge: true }
+        );
 
         await updateDoc(roundRef, { count: increment(1) });
         await updateDoc(seasonRef, { count: increment(1) });
 
         alert("Vote submitted!");
-        confirmModal.style.display = "none";
+        closeConfirmModal();
         voteScreen.style.display = "none";
         mainScreen.style.display = "block";
         selectedVoter = "";
-        selectedVote = "";
+
+        if (coachPanel.style.display === "block") {
+          await loadTally(currentTallyType);
+        }
+      } catch (error) {
+        console.error("Error submitting vote:", error);
+        alert(`Vote failed: ${error.message}`);
+      }
     };
 
-    /* ---------------- COACH ACCESS ---------------- */
-    coachLoginBtn.onclick = () => {
-        const pin = prompt("Enter coach PIN:");
-        if (pin === COACH_PIN) {
-            coachPanel.style.display = "block";
-            loadTally("round");
-        } else if (pin !== null) {
-            alert("Incorrect PIN.");
-        }
+    coachLoginBtn.onclick = async () => {
+      const pin = prompt("Enter coach PIN:");
+
+      if (pin === COACH_PIN) {
+        coachPanel.style.display = "block";
+        await loadTally("round");
+      } else if (pin !== null) {
+        alert("Incorrect PIN.");
+      }
     };
 
     closeCoachPanelBtn.onclick = () => {
-        coachPanel.style.display = "none";
+      coachPanel.style.display = "none";
     };
 
     backToMainBtn.onclick = () => {
-        voteScreen.style.display = "none";
-        mainScreen.style.display = "block";
+      voteScreen.style.display = "none";
+      mainScreen.style.display = "block";
+      selectedVoter = "";
+      selectedVote = "";
+      closeConfirmModal();
     };
 
-    /* ---------------- ROUND CONTROLS ---------------- */
     prevRoundBtn.onclick = async () => {
-        if (currentRound > 1) {
-            currentRound -= 1;
-            await saveRoundStatus();
-        }
+      if (currentRound > 1) {
+        currentRound -= 1;
+        await saveRoundStatus();
+        await loadTally(currentTallyType);
+      }
     };
 
     nextRoundBtn.onclick = async () => {
-        currentRound += 1;
-        await saveRoundStatus();
+      currentRound += 1;
+      votingOpen = false;
+      await saveRoundStatus();
+      await loadTally(currentTallyType);
     };
 
     toggleLockBtn.onclick = async () => {
-        votingOpen = !votingOpen;
-        await saveRoundStatus();
+      votingOpen = !votingOpen;
+      await saveRoundStatus();
     };
 
-    /* ---------------- LOAD TALLY ---------------- */
     async function loadTally(type) {
-        tallyBody.innerHTML = "";
-        tallyTypeHeader.textContent = type === "round" ? "Round Votes" : "Season Votes";
+      currentTallyType = type;
+      tallyBody.innerHTML = "";
+      tallyTypeHeader.textContent = type === "round" ? "Round Votes" : "Season Votes";
 
-        const colName = type === "round" ? "roundVotes" : "seasonVotes";
-        const colRef = collection(db, colName);
-        const snap = await getDocs(colRef);
+      const colName = type === "round" ? getRoundVotesCollectionName(currentRound) : "seasonVotes";
+      const colRef = collection(db, colName);
+      const snap = await getDocs(colRef);
 
-        const counts = {};
-        players.forEach(p => counts[p] = 0);
+      const counts = {};
+      players.forEach((player) => {
+        counts[player] = 0;
+      });
 
-        snap.forEach(docSnap => {
-            const name = docSnap.id;
-            const data = docSnap.data();
-            if (counts.hasOwnProperty(name)) {
-                counts[name] = data.count || 0;
+      snap.forEach((docSnap) => {
+        const playerName = docSnap.id;
+        const data = docSnap.data();
+
+        if (Object.prototype.hasOwnProperty.call(counts, playerName)) {
+          counts[playerName] = data.count || 0;
+        }
+      });
+
+      players
+        .slice()
+        .sort((a, b) => counts[b] - counts[a] || a.localeCompare(b))
+        .forEach((player) => {
+          const tr = document.createElement("tr");
+
+          const nameTd = document.createElement("td");
+          nameTd.textContent = player;
+
+          const countTd = document.createElement("td");
+          countTd.textContent = counts[player];
+
+          tr.appendChild(nameTd);
+          tr.appendChild(countTd);
+          tallyBody.appendChild(tr);
+        });
+    }
+
+    showRoundBtn.onclick = async () => {
+      await loadTally("round");
+    };
+
+    showSeasonBtn.onclick = async () => {
+      await loadTally("season");
+    };
+
+    resetRoundBtn.onclick = async () => {
+      const confirmed = confirm(`Reset all votes for Round ${currentRound}?`);
+      if (!confirmed) return;
+
+      try {
+        const batch = writeBatch(db);
+
+        for (const player of players) {
+          const ref = doc(db, getRoundVotesCollectionName(currentRound), player);
+          batch.set(ref, { count: 0 }, { merge: true });
+        }
+
+        const voteAuditRef = doc(db, "roundAudit", `round_${currentRound}`);
+        batch.set(voteAuditRef, { votedBy: {}, updatedAt: serverTimestamp() }, { merge: true });
+
+        await batch.commit();
+        await loadTally("round");
+        alert(`Round ${currentRound} has been reset.`);
+      } catch (error) {
+        console.error("Error resetting round:", error);
+        alert(`Reset failed: ${error.message}`);
+      }
+    };
+
+    window.onclick = (event) => {
+      if (event.target === confirmModal) {
+        closeConfirmModal();
+      }
+    };
+
+    async function init() {
+      try {
+        buildVoterList();
+        await loadRoundStatus();
+        showStatus("Firestore connected.");
+      } catch (error) {
+        console.error("Initialization error:", error);
+        showStatus(`App failed to load: ${error.message}`, true);
+        alert(`App failed to load: ${error.message}`);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

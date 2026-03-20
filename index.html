@@ -149,7 +149,7 @@
 
     table {
       width: 100%;
-      max-width: 500px;
+      max-width: 700px;
       margin: 10px auto 0;
       border-collapse: collapse;
       color: #fff;
@@ -175,6 +175,18 @@
 
     .reset-btn:hover {
       background-color: #ff0000;
+      color: #000;
+    }
+
+    .season-reset-btn {
+      margin-top: 15px;
+      background-color: #000;
+      border-color: #ff66cc;
+      color: #ff66cc;
+    }
+
+    .season-reset-btn:hover {
+      background-color: #ff66cc;
       color: #000;
     }
 
@@ -207,13 +219,28 @@
 
     .coach-controls-row button {
       width: 45%;
-      max-width: 200px;
+      max-width: 220px;
     }
 
     .error-note {
       color: #ff8080;
       font-size: 13px;
       margin-top: 10px;
+    }
+
+    .section-wrap {
+      max-width: 750px;
+      margin: 20px auto 0;
+    }
+
+    .green-text {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .red-text {
+      color: #ff4d4d;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -270,18 +297,38 @@
       <button class="coach-btn" id="showSeasonBtn">Show Season Tally</button>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th id="tallyTypeHeader">Round Votes</th>
-        </tr>
-      </thead>
-      <tbody id="tallyBody"></tbody>
-    </table>
+    <div class="section-wrap">
+      <div class="section-title">Tally</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th id="tallyTypeHeader">Round Votes</th>
+          </tr>
+        </thead>
+        <tbody id="tallyBody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-wrap">
+      <div class="section-title">Voting Status</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Status</th>
+            <th>Voted For</th>
+          </tr>
+        </thead>
+        <tbody id="voterStatusBody"></tbody>
+      </table>
+    </div>
 
     <button class="player-btn reset-btn" id="resetRoundBtn">Reset Current Round</button>
-    <p class="small-note">This only resets the current round tally.</p>
+    <p class="small-note">This resets only the current round tally and current round voter status.</p>
+
+    <button class="player-btn season-reset-btn" id="resetSeasonBtn">Reset Entire Season</button>
+    <p class="small-note">This resets all rounds, all season votes, all voter tracking, returns to Round 1, and locks voting.</p>
 
     <button class="player-btn back-btn" id="closeCoachPanelBtn">Close Coach Panel</button>
   </div>
@@ -292,13 +339,12 @@
       getFirestore,
       doc,
       setDoc,
-      updateDoc,
-      increment,
       getDoc,
       getDocs,
       collection,
       writeBatch,
-      serverTimestamp
+      serverTimestamp,
+      runTransaction
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -360,6 +406,7 @@
     const coachPanel = document.getElementById("coachPanel");
     const tallyBody = document.getElementById("tallyBody");
     const tallyTypeHeader = document.getElementById("tallyTypeHeader");
+    const voterStatusBody = document.getElementById("voterStatusBody");
 
     const coachLoginBtn = document.getElementById("coachLoginBtn");
     const prevRoundBtn = document.getElementById("prevRoundBtn");
@@ -368,6 +415,7 @@
     const showRoundBtn = document.getElementById("showRoundBtn");
     const showSeasonBtn = document.getElementById("showSeasonBtn");
     const resetRoundBtn = document.getElementById("resetRoundBtn");
+    const resetSeasonBtn = document.getElementById("resetSeasonBtn");
     const closeCoachPanelBtn = document.getElementById("closeCoachPanelBtn");
     const backToMainBtn = document.getElementById("backToMainBtn");
     const cancelVoteBtn = document.getElementById("cancelVoteBtn");
@@ -377,31 +425,35 @@
       return `roundVotes_r${round}`;
     }
 
+    function getRoundAuditDocId(round) {
+      return `round_${round}`;
+    }
+
     function showStatus(message, isError = false) {
       statusMessage.textContent = message;
       statusMessage.style.color = isError ? "#ff8080" : "#90ee90";
     }
 
     async function ensurePlayerDocsForRound(round) {
-      const batch = writeBatch(db);
-
       for (const player of players) {
         const ref = doc(db, getRoundVotesCollectionName(round), player);
-        batch.set(ref, { count: 0 }, { merge: true });
-      }
+        const snap = await getDoc(ref);
 
-      await batch.commit();
+        if (!snap.exists()) {
+          await setDoc(ref, { count: 0 });
+        }
+      }
     }
 
     async function ensureSeasonDocs() {
-      const batch = writeBatch(db);
-
       for (const player of players) {
         const ref = doc(db, "seasonVotes", player);
-        batch.set(ref, { count: 0 }, { merge: true });
-      }
+        const snap = await getDoc(ref);
 
-      await batch.commit();
+        if (!snap.exists()) {
+          await setDoc(ref, { count: 0 });
+        }
+      }
     }
 
     async function loadRoundStatus() {
@@ -462,7 +514,7 @@
       }
 
       try {
-        const voteAuditRef = doc(db, "roundAudit", `round_${currentRound}`);
+        const voteAuditRef = doc(db, "roundAudit", getRoundAuditDocId(currentRound));
         const voteAuditSnap = await getDoc(voteAuditRef);
         const votedBy = voteAuditSnap.exists() ? voteAuditSnap.data().votedBy || {} : {};
 
@@ -508,25 +560,33 @@
       selectedVote = "";
     }
 
-    cancelVoteBtn.onclick = closeConfirmModal;
+    async function submitVote(voter, votedFor) {
+      const roundRef = doc(db, getRoundVotesCollectionName(currentRound), votedFor);
+      const seasonRef = doc(db, "seasonVotes", votedFor);
+      const voteAuditRef = doc(db, "roundAudit", getRoundAuditDocId(currentRound));
 
-    confirmVoteBtn.onclick = async () => {
-      if (!selectedVote || !selectedVoter) return;
+      await runTransaction(db, async (transaction) => {
+        const auditSnap = await transaction.get(voteAuditRef);
+        const votedBy = auditSnap.exists() ? auditSnap.data().votedBy || {} : {};
 
-      try {
-        const roundRef = doc(db, getRoundVotesCollectionName(currentRound), selectedVote);
-        const seasonRef = doc(db, "seasonVotes", selectedVote);
-        const voteAuditRef = doc(db, "roundAudit", `round_${currentRound}`);
+        if (votedBy[voter]) {
+          throw new Error(`${voter} has already voted in Round ${currentRound}.`);
+        }
 
-        await setDoc(roundRef, { count: 0 }, { merge: true });
-        await setDoc(seasonRef, { count: 0 }, { merge: true });
+        const roundSnap = await transaction.get(roundRef);
+        const seasonSnap = await transaction.get(seasonRef);
 
-        await setDoc(
+        const roundCount = roundSnap.exists() ? (roundSnap.data().count || 0) : 0;
+        const seasonCount = seasonSnap.exists() ? (seasonSnap.data().count || 0) : 0;
+
+        transaction.set(roundRef, { count: roundCount + 1 }, { merge: true });
+        transaction.set(seasonRef, { count: seasonCount + 1 }, { merge: true });
+        transaction.set(
           voteAuditRef,
           {
             votedBy: {
-              [selectedVoter]: {
-                votedFor: selectedVote,
+              [voter]: {
+                votedFor: votedFor,
                 votedAt: new Date().toISOString()
               }
             },
@@ -534,67 +594,8 @@
           },
           { merge: true }
         );
-
-        await updateDoc(roundRef, { count: increment(1) });
-        await updateDoc(seasonRef, { count: increment(1) });
-
-        alert("Vote submitted!");
-        closeConfirmModal();
-        voteScreen.style.display = "none";
-        mainScreen.style.display = "block";
-        selectedVoter = "";
-
-        if (coachPanel.style.display === "block") {
-          await loadTally(currentTallyType);
-        }
-      } catch (error) {
-        console.error("Error submitting vote:", error);
-        alert(`Vote failed: ${error.message}`);
-      }
-    };
-
-    coachLoginBtn.onclick = async () => {
-      const pin = prompt("Enter coach PIN:");
-
-      if (pin === COACH_PIN) {
-        coachPanel.style.display = "block";
-        await loadTally("round");
-      } else if (pin !== null) {
-        alert("Incorrect PIN.");
-      }
-    };
-
-    closeCoachPanelBtn.onclick = () => {
-      coachPanel.style.display = "none";
-    };
-
-    backToMainBtn.onclick = () => {
-      voteScreen.style.display = "none";
-      mainScreen.style.display = "block";
-      selectedVoter = "";
-      selectedVote = "";
-      closeConfirmModal();
-    };
-
-    prevRoundBtn.onclick = async () => {
-      if (currentRound > 1) {
-        currentRound -= 1;
-        await saveRoundStatus();
-        await loadTally(currentTallyType);
-      }
-    };
-
-    nextRoundBtn.onclick = async () => {
-      currentRound += 1;
-      votingOpen = false;
-      await saveRoundStatus();
-      await loadTally(currentTallyType);
-    };
-
-    toggleLockBtn.onclick = async () => {
-      votingOpen = !votingOpen;
-      await saveRoundStatus();
-    };
+      });
+    }
 
     async function loadTally(type) {
       currentTallyType = type;
@@ -637,16 +638,125 @@
         });
     }
 
+    async function loadVoterStatus() {
+      voterStatusBody.innerHTML = "";
+
+      const voteAuditRef = doc(db, "roundAudit", getRoundAuditDocId(currentRound));
+      const voteAuditSnap = await getDoc(voteAuditRef);
+      const votedBy = voteAuditSnap.exists() ? voteAuditSnap.data().votedBy || {} : {};
+
+      players.forEach((player) => {
+        const tr = document.createElement("tr");
+
+        const playerTd = document.createElement("td");
+        playerTd.textContent = player;
+
+        const statusTd = document.createElement("td");
+        const votedForTd = document.createElement("td");
+
+        if (votedBy[player]) {
+          statusTd.textContent = "Voted";
+          statusTd.className = "green-text";
+          votedForTd.textContent = votedBy[player].votedFor || "-";
+        } else {
+          statusTd.textContent = "Not Voted";
+          statusTd.className = "red-text";
+          votedForTd.textContent = "-";
+        }
+
+        tr.appendChild(playerTd);
+        tr.appendChild(statusTd);
+        tr.appendChild(votedForTd);
+
+        voterStatusBody.appendChild(tr);
+      });
+    }
+
+    async function refreshCoachPanel() {
+      await loadTally(currentTallyType);
+      await loadVoterStatus();
+    }
+
+    cancelVoteBtn.onclick = closeConfirmModal;
+
+    confirmVoteBtn.onclick = async () => {
+      if (!selectedVote || !selectedVoter) return;
+
+      try {
+        await submitVote(selectedVoter, selectedVote);
+
+        alert("Vote submitted!");
+        closeConfirmModal();
+        voteScreen.style.display = "none";
+        mainScreen.style.display = "block";
+        selectedVoter = "";
+
+        if (coachPanel.style.display === "block") {
+          await refreshCoachPanel();
+        }
+      } catch (error) {
+        console.error("Error submitting vote:", error);
+        alert(`Vote failed: ${error.message}`);
+      }
+    };
+
+    coachLoginBtn.onclick = async () => {
+      const pin = prompt("Enter coach PIN:");
+
+      if (pin === COACH_PIN) {
+        coachPanel.style.display = "block";
+        currentTallyType = "round";
+        await refreshCoachPanel();
+      } else if (pin !== null) {
+        alert("Incorrect PIN.");
+      }
+    };
+
+    closeCoachPanelBtn.onclick = () => {
+      coachPanel.style.display = "none";
+    };
+
+    backToMainBtn.onclick = () => {
+      voteScreen.style.display = "none";
+      mainScreen.style.display = "block";
+      selectedVoter = "";
+      selectedVote = "";
+      closeConfirmModal();
+    };
+
+    prevRoundBtn.onclick = async () => {
+      if (currentRound > 1) {
+        currentRound -= 1;
+        await saveRoundStatus();
+        await refreshCoachPanel();
+      }
+    };
+
+    nextRoundBtn.onclick = async () => {
+      currentRound += 1;
+      votingOpen = false;
+      await saveRoundStatus();
+      await refreshCoachPanel();
+    };
+
+    toggleLockBtn.onclick = async () => {
+      votingOpen = !votingOpen;
+      await saveRoundStatus();
+      await refreshCoachPanel();
+    };
+
     showRoundBtn.onclick = async () => {
       await loadTally("round");
+      await loadVoterStatus();
     };
 
     showSeasonBtn.onclick = async () => {
       await loadTally("season");
+      await loadVoterStatus();
     };
 
     resetRoundBtn.onclick = async () => {
-      const confirmed = confirm(`Reset all votes for Round ${currentRound}?`);
+      const confirmed = confirm(`Reset all votes and voter tracking for Round ${currentRound}?`);
       if (!confirmed) return;
 
       try {
@@ -657,15 +767,65 @@
           batch.set(ref, { count: 0 }, { merge: true });
         }
 
-        const voteAuditRef = doc(db, "roundAudit", `round_${currentRound}`);
+        const voteAuditRef = doc(db, "roundAudit", getRoundAuditDocId(currentRound));
         batch.set(voteAuditRef, { votedBy: {}, updatedAt: serverTimestamp() }, { merge: true });
 
         await batch.commit();
-        await loadTally("round");
+        await refreshCoachPanel();
         alert(`Round ${currentRound} has been reset.`);
       } catch (error) {
         console.error("Error resetting round:", error);
         alert(`Reset failed: ${error.message}`);
+      }
+    };
+
+    resetSeasonBtn.onclick = async () => {
+      const confirmed = confirm(
+        "Reset the ENTIRE season? This will clear all rounds, all season tallies, all voter tracking, return to Round 1, and lock voting."
+      );
+      if (!confirmed) return;
+
+      try {
+        for (let round = 1; round <= currentRound; round++) {
+          const batch = writeBatch(db);
+
+          for (const player of players) {
+            const roundRef = doc(db, getRoundVotesCollectionName(round), player);
+            batch.set(roundRef, { count: 0 }, { merge: true });
+          }
+
+          const roundAuditRef = doc(db, "roundAudit", getRoundAuditDocId(round));
+          batch.set(roundAuditRef, { votedBy: {}, updatedAt: serverTimestamp() }, { merge: true });
+
+          await batch.commit();
+        }
+
+        {
+          const seasonBatch = writeBatch(db);
+
+          for (const player of players) {
+            const seasonRef = doc(db, "seasonVotes", player);
+            seasonBatch.set(seasonRef, { count: 0 }, { merge: true });
+          }
+
+          currentRound = 1;
+          votingOpen = false;
+
+          const statusRef = doc(db, "settings", "roundStatus");
+          seasonBatch.set(statusRef, { round: 1, open: false }, { merge: true });
+
+          await seasonBatch.commit();
+        }
+
+        updateRoundUI();
+        currentTallyType = "round";
+        await ensurePlayerDocsForRound(1);
+        await refreshCoachPanel();
+
+        alert("Entire season has been reset.");
+      } catch (error) {
+        console.error("Error resetting season:", error);
+        alert(`Season reset failed: ${error.message}`);
       }
     };
 

@@ -48,6 +48,12 @@
             color: #ff8c00;
         }
 
+        .sub-round {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
         .player-btn,
         .coach-btn {
             display: block;
@@ -178,6 +184,32 @@
             color: #ccc;
             margin-top: 6px;
         }
+
+        .coach-status {
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .status-open {
+            color: #28a745;
+        }
+
+        .status-locked {
+            color: #ff0000;
+        }
+
+        .coach-controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .coach-controls-row button {
+            width: 45%;
+            max-width: 200px;
+        }
     </style>
 </head>
 
@@ -186,12 +218,13 @@
 <header>
     <img src="WMJRLFC-logo.jpg" alt="Club Logo">
     <h1>WMJRLFC U11 Voting</h1>
-    <h2>U11's Players' Player Voting</h2>
+    <h2 id="headerRoundText">Round 1 – U11's Players' Player Voting</h2>
 </header>
 
 <!-- MAIN SCREEN -->
 <div class="container" id="mainScreen">
     <div class="section-title">Select Your Name</div>
+    <div class="sub-round" id="mainRoundText">Current Round: 1</div>
     <div id="voterList"></div>
 
     <button class="coach-btn" id="coachLoginBtn">Coach Access</button>
@@ -201,6 +234,7 @@
 <!-- VOTING SCREEN -->
 <div class="container" id="voteScreen" style="display:none;">
     <div class="section-title" id="voterTitle"></div>
+    <div class="sub-round" id="voteRoundText">Round 1</div>
     <p>Select the player you want to vote for:</p>
     <div id="playerList"></div>
 
@@ -220,9 +254,21 @@
 <!-- COACH PANEL -->
 <div id="coachPanel">
     <div class="section-title">Coach Controls</div>
+    <div class="sub-round" id="coachRoundText">Round: 1</div>
+    <div class="coach-status" id="coachStatusText">
+        Status: <span class="status-locked">Locked</span>
+    </div>
 
-    <button class="coach-btn" id="showRoundBtn">Show Round Tally</button>
-    <button class="coach-btn" id="showSeasonBtn">Show Season Tally</button>
+    <div class="coach-controls-row">
+        <button class="coach-btn" id="prevRoundBtn">Previous Round</button>
+        <button class="coach-btn" id="nextRoundBtn">Next Round</button>
+        <button class="coach-btn" id="toggleLockBtn">Unlock Voting</button>
+    </div>
+
+    <div class="coach-controls-row">
+        <button class="coach-btn" id="showRoundBtn">Show Round Tally</button>
+        <button class="coach-btn" id="showSeasonBtn">Show Season Tally</button>
+    </div>
 
     <table>
         <thead>
@@ -254,14 +300,16 @@
         collection
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    /* 🔥 PASTE YOUR FIREBASE CONFIG HERE 🔥 */
+    /* 🔥 PASTE YOUR REAL FIREBASE CONFIG HERE 🔥 */
     const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        projectId: "YOUR_PROJECT",
-        storageBucket: "YOUR_PROJECT.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCooiQwStOGMygIS2nn8ZzvGUlZR15E0Z4",
+  authDomain: "u11-voting.firebaseapp.com",
+  projectId: "u11-voting",
+  storageBucket: "u11-voting.firebasestorage.app",
+  messagingSenderId: "512052329704",
+  appId: "1:512052329704:web:123ae54d6c17fd7ed1dd5d",
+  measurementId: "G-NDTRTVL9PN"
+};
     };
 
     const app = initializeApp(firebaseConfig);
@@ -287,16 +335,24 @@
         "Zayden Clifford"
     ];
 
-    const COACH_PIN = "1234"; // Change this
+    const COACH_PIN = "2287";
 
     let selectedVoter = "";
     let selectedVote = "";
+    let currentRound = 1;
+    let votingOpen = false;
 
     const mainScreen = document.getElementById("mainScreen");
     const voteScreen = document.getElementById("voteScreen");
     const voterListDiv = document.getElementById("voterList");
     const playerListDiv = document.getElementById("playerList");
     const voterTitle = document.getElementById("voterTitle");
+
+    const headerRoundText = document.getElementById("headerRoundText");
+    const mainRoundText = document.getElementById("mainRoundText");
+    const voteRoundText = document.getElementById("voteRoundText");
+    const coachRoundText = document.getElementById("coachRoundText");
+    const coachStatusText = document.getElementById("coachStatusText");
 
     const confirmModal = document.getElementById("confirmModal");
     const confirmText = document.getElementById("confirmText");
@@ -305,6 +361,56 @@
     const tallyBody = document.getElementById("tallyBody");
     const tallyTypeHeader = document.getElementById("tallyTypeHeader");
 
+    const coachLoginBtn = document.getElementById("coachLoginBtn");
+    const prevRoundBtn = document.getElementById("prevRoundBtn");
+    const nextRoundBtn = document.getElementById("nextRoundBtn");
+    const toggleLockBtn = document.getElementById("toggleLockBtn");
+    const showRoundBtn = document.getElementById("showRoundBtn");
+    const showSeasonBtn = document.getElementById("showSeasonBtn");
+    const resetRoundBtn = document.getElementById("resetRoundBtn");
+    const closeCoachPanelBtn = document.getElementById("closeCoachPanelBtn");
+    const backToMainBtn = document.getElementById("backToMainBtn");
+    const cancelVoteBtn = document.getElementById("cancelVoteBtn");
+    const confirmVoteBtn = document.getElementById("confirmVoteBtn");
+
+    /* ---------------- ROUND STATUS (FIRESTORE) ---------------- */
+    async function loadRoundStatus() {
+        const statusRef = doc(db, "settings", "roundStatus");
+        const snap = await getDoc(statusRef);
+
+        if (!snap.exists()) {
+            await setDoc(statusRef, { round: 1, open: false });
+            currentRound = 1;
+            votingOpen = false;
+        } else {
+            const data = snap.data();
+            currentRound = data.round || 1;
+            votingOpen = !!data.open;
+        }
+
+        updateRoundUI();
+    }
+
+    async function saveRoundStatus() {
+        const statusRef = doc(db, "settings", "roundStatus");
+        await setDoc(statusRef, { round: currentRound, open: votingOpen }, { merge: true });
+        updateRoundUI();
+    }
+
+    function updateRoundUI() {
+        headerRoundText.textContent = `Round ${currentRound} – U11's Players' Player Voting`;
+        mainRoundText.textContent = `Current Round: ${currentRound}`;
+        voteRoundText.textContent = `Round ${currentRound}`;
+        coachRoundText.textContent = `Round: ${currentRound}`;
+
+        const statusSpanClass = votingOpen ? "status-open" : "status-locked";
+        const statusText = votingOpen ? "Open" : "Locked";
+        const statusHtml = `Status: <span class="${statusSpanClass}">${statusText}</span>`;
+        coachStatusText.innerHTML = statusHtml;
+
+        toggleLockBtn.textContent = votingOpen ? "Lock Voting" : "Unlock Voting";
+    }
+
     /* ---------------- BUILD VOTER LIST ---------------- */
     function buildVoterList() {
         voterListDiv.innerHTML = "";
@@ -312,9 +418,17 @@
             const btn = document.createElement("button");
             btn.className = "player-btn";
             btn.textContent = name;
-            btn.onclick = () => openVoting(name);
+            btn.onclick = () => handleVoterClick(name);
             voterListDiv.appendChild(btn);
         });
+    }
+
+    function handleVoterClick(voter) {
+        if (!votingOpen) {
+            alert("Voting is not yet open");
+            return;
+        }
+        openVoting(voter);
     }
 
     /* ---------------- OPEN VOTING ---------------- */
@@ -334,4 +448,127 @@
                 playerListDiv.appendChild(btn);
             }
         });
+    }
 
+    /* ---------------- CONFIRM MODAL ---------------- */
+    function openConfirm(player) {
+        selectedVote = player;
+        confirmText.textContent = `Are you sure you want to vote for ${player}?`;
+        confirmModal.style.display = "block";
+    }
+
+    cancelVoteBtn.onclick = () => {
+        confirmModal.style.display = "none";
+    };
+
+    confirmVoteBtn.onclick = async () => {
+        if (!selectedVote) return;
+
+        const roundRef = doc(db, "roundVotes", selectedVote);
+        const seasonRef = doc(db, "seasonVotes", selectedVote);
+
+        const roundSnap = await getDoc(roundRef);
+        if (!roundSnap.exists()) await setDoc(roundRef, { count: 0 });
+
+        const seasonSnap = await getDoc(seasonRef);
+        if (!seasonSnap.exists()) await setDoc(seasonRef, { count: 0 });
+
+        await updateDoc(roundRef, { count: increment(1) });
+        await updateDoc(seasonRef, { count: increment(1) });
+
+        alert("Vote submitted!");
+        confirmModal.style.display = "none";
+        voteScreen.style.display = "none";
+        mainScreen.style.display = "block";
+        selectedVoter = "";
+        selectedVote = "";
+    };
+
+    /* ---------------- COACH ACCESS ---------------- */
+    coachLoginBtn.onclick = () => {
+        const pin = prompt("Enter coach PIN:");
+        if (pin === COACH_PIN) {
+            coachPanel.style.display = "block";
+            loadTally("round");
+        } else if (pin !== null) {
+            alert("Incorrect PIN.");
+        }
+    };
+
+    closeCoachPanelBtn.onclick = () => {
+        coachPanel.style.display = "none";
+    };
+
+    backToMainBtn.onclick = () => {
+        voteScreen.style.display = "none";
+        mainScreen.style.display = "block";
+    };
+
+    /* ---------------- ROUND CONTROLS ---------------- */
+    prevRoundBtn.onclick = async () => {
+        if (currentRound > 1) {
+            currentRound -= 1;
+            await saveRoundStatus();
+        }
+    };
+
+    nextRoundBtn.onclick = async () => {
+        currentRound += 1;
+        await saveRoundStatus();
+    };
+
+    toggleLockBtn.onclick = async () => {
+        votingOpen = !votingOpen;
+        await saveRoundStatus();
+    };
+
+    /* ---------------- LOAD TALLY ---------------- */
+    async function loadTally(type) {
+        tallyBody.innerHTML = "";
+        tallyTypeHeader.textContent = type === "round" ? "Round Votes" : "Season Votes";
+
+        const colName = type === "round" ? "roundVotes" : "seasonVotes";
+        const colRef = collection(db, colName);
+        const snap = await getDocs(colRef);
+
+        const counts = {};
+        players.forEach(p => counts[p] = 0);
+
+        snap.forEach(docSnap => {
+            const name = docSnap.id;
+            const data = docSnap.data();
+            if (counts.hasOwnProperty(name)) {
+                counts[name] = data.count || 0;
+            }
+        });
+
+        players.forEach(player => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${player}</td><td>${counts[player]}</td>`;
+            tallyBody.appendChild(tr);
+        });
+    }
+
+    showRoundBtn.onclick = () => loadTally("round");
+    showSeasonBtn.onclick = () => loadTally("season");
+
+    /* ---------------- RESET ROUND ---------------- */
+    resetRoundBtn.onclick = async () => {
+        if (!confirm("Reset current round tally?")) return;
+
+        for (const player of players) {
+            const ref = doc(db, "roundVotes", player);
+            await setDoc(ref, { count: 0 });
+        }
+
+        alert("Round tally reset.");
+        loadTally("round");
+    };
+
+    /* ---------------- INIT ---------------- */
+    buildVoterList();
+    loadRoundStatus();
+</script>
+
+</body>
+</html>
